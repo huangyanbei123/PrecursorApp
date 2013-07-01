@@ -61,6 +61,7 @@ settings = {
         }
     },
 
+    //Site settings
     site: { 
         template:       "#content", //Render the templates in here
         home:           "page1"     //The #hash of the first page
@@ -72,6 +73,23 @@ app = {
     run: function(){
         //DOM ready in here
         helper.console(settings.loader.lang.en.status.ready);
+    }
+};
+
+//------------------------------------------------------------------- 
+router = {
+    init: function(route){
+        helper.console('Routing is ready');
+        route.mapRoutes([
+            ['get', '#/', function() { 
+                helper.console('Home');
+                //DO SOMETHING
+            }],
+            ['get', '#/:frag', function() { 
+                //From the router, send value to the view / template
+                view.render(this.params['frag']);
+            }]
+        ]);
     }
 };
 
@@ -89,12 +107,6 @@ view = {
 //------------------------------------------------------------------- 
 utils = {
     loader: {
-        init: function(){
-            var SiteLoader = (function(window){
-                var document = window.document
-                return loader;
-            })(window);
-        },
         onEvent: function(event, elem){
             if (elem === undefined){elem = 15;}
             settings.loader.progress += elem;
@@ -117,10 +129,24 @@ utils = {
                     break;
             }
         },
-        images: function(route){
+        start: function(){
+            utils.loader.command("show");
+            //Load any assets as required...
+
+
+        },
+        images: function(route, loadpercent){
+            //Because the images preloading will be accessed outside of the
+            //normal page load (e.g. routing), we'll need to re-use this module.
+
+            //We can pass in a predetermined loadpercent, and calculate the
+            //remaining % left.
+            if (loadpercent === undefined){
+                loadpercent = 100;
+            }
             var imgLoad = imagesLoaded(document.getElementById("c_" + route))
               , imagecount = imgLoad.images.length
-              , _img = 100 / imagecount;
+              , _img = loadpercent / imagecount;
 
             helper.console("Loading " + imagecount + " images");
 
@@ -145,23 +171,6 @@ utils = {
 };
 
 //------------------------------------------------------------------- 
-router = {
-    init: function(route){
-        helper.console('Routing is ready');
-        route.mapRoutes([
-            ['get', '#/', function() { 
-                helper.console('Home');
-                //DO SOMETHING
-            }],
-            ['get', '#/:frag', function() { 
-                //From the router, send value to the view / template
-                view.render(this.params['frag']);
-            }]
-        ]);
-    }
-};
-
-//------------------------------------------------------------------- 
 helper = {
     console: function(msg){
         if (settings.console.enabled){
@@ -182,10 +191,10 @@ helper.console(settings.loader.lang.en.status.dom);
     load: settings.scripts.paths,
     complete: function(){
         helper.console(settings.loader.lang.en.status.scripts);
-
+        utils.loader.onEvent(settings.loader.lang.en.msg.scripts);
         //Load our typekit fonts
         if (settings.typekit.enabled){
-            //utils.loader.onEvent(settings.loader.lang.en.msg.fonts);
+            utils.loader.onEvent(settings.loader.lang.en.msg.fonts);
             TypekitConfig = {
                 kitId: settings.typekit.id,
                 scriptTimeout: 3000
@@ -207,12 +216,11 @@ helper.console(settings.loader.lang.en.status.dom);
             helper.console(settings.loader.lang.en.status.fonts);
         }
 
-        //Scripts are loaded, so load all images and report back status
+        utils.loader.onEvent(settings.loader.lang.en.msg.fonts);
+        //Initialize routing, then load images...
         $(function(){
-            //Initial run, hide the loader and run the app.
             app.run();
-
-            //Initialize routing, then load images...
+            
             Sammy(function() {
                 router.init(this);
             }).run();
