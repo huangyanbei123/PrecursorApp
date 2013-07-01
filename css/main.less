@@ -1,0 +1,155 @@
+//  ==========================================================================
+//  PRECURSOR CSS
+//  ==========================================================================
+
+//  Imports
+    @import "grid.css";
+    @import "mixins";
+
+//  Font settings
+    @fontstack: Helvetica, Arial, sans-serif;
+
+//  ==========================================================================
+//  DEMO CSS
+//  ==========================================================================
+    
+html{
+    margin:0;
+    padding:0;
+}
+body{
+    margin:0;
+    padding:0;
+    font-family:@fontstack;
+}
+
+    @block:#e0e0e0;
+    .grid_block{
+        background:@block;
+        color:#202020;
+        overflow:hidden;
+        font-family:@fontstack;
+    }
+    .grid_outer_container{
+        background:lighten(@block, 20%);
+    }
+
+    .grid_block.grid_block_nest{
+        padding:0;
+    }
+
+    .grid_block .grid_block{
+        background:darken(@block, 10%);
+    }
+
+    .grid_block{
+        margin-bottom:10px;
+    }
+    .grid_row .grid_block{
+        margin-bottom:0;
+    }
+
+
+#wrapper{
+    position:relative;
+    margin-right:@console_width;
+}
+
+@console_width:150px;
+#console{
+    position:fixed;
+    top:0;
+    right:0;
+    width:@console_width;
+    height:100%;
+    background:#f1f1f1;
+}
+
+
+@loader_width:150px;
+@loader_height:150px;
+@loader_bar_height:30px;
+@loader_background:#686868;
+@loader_bar_background:#2e74a6;
+#loader{
+    font-size:18px;
+    position:fixed;
+    width:@loader_width;
+    height:@loader_height;
+    top:50%;
+    left:50%;
+    margin-left:-(@loader_width/2);
+    margin-top:-(@loader_height/2);
+    text-align:center;
+
+    #loader-percentage{
+        position:absolute;
+        top:0;
+        left:0;
+        line-height:@loader_bar_height;
+        width:100%;
+        color:#fff;
+    }
+    #loader-update{
+        margin-top:5px;
+        font-size:11px;
+    }
+
+    #bar {
+        background:@loader_background;
+        height:@loader_bar_height;
+        width:100%;
+        display:block;
+        position:relative;
+        .makeRounded(3px);
+        overflow:hidden;
+
+        #loader-bar{
+            width:0;
+            background:@loader_bar_background;
+            position:absolute;
+            top:0;
+            left:0;
+            height:100%;
+            .makePretty(0.2s);
+            .makeRounded(2px);
+        }
+    }
+}
+
+
+//  ==========================================================================
+//  HEADER
+//  ==========================================================================
+    header .logo img{
+        margin:0;
+        padding:0;
+        width:100%;
+        position:relative;
+        display:block;
+    }
+
+
+//  ==========================================================================
+//  THE USUAL SUSPECTS
+//  ==========================================================================
+
+.clear{
+    margin:0;
+    padding:0;
+    clear:both;
+    height:0;
+    display:block;
+} 
+.clearfix {
+    *zoom: 1;
+}
+.clearfix:before,
+.clearfix:after {
+    display: table;
+    content: "";
+    line-height: 0;
+}
+.clearfix:after {
+    clear: both;
+}

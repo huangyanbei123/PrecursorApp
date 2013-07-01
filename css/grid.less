@@ -1,0 +1,234 @@
+//  ==========================================================================
+//  Precursor Grid CSS
+//  ==========================================================================
+
+//  Global options
+    @isResponsive:true;
+    @isRelative:true;
+    @isFluid:false;
+    @mobileOverride:true;
+    @tabletResponsive:true;
+    @desktopResponsive:true;
+
+//  Grid options
+    @blockGutter:5px;
+    @fluidGutter:0.5%;
+    @outerGutter:10px;
+ 
+//  CSS Scoping
+    @outerContainerCSSScope:    ".grid_outer_container";
+    @blockContainerCSSScope:    ".grid_container";
+    @blockPrefixCSSScope:       ".grid_block";
+    @blockCSSScope:             ".grid_";
+    @relativeCSSScope:          ".relative";
+    @fluidCSSScope:             ".fluid";
+    @fixedRightCSSScope:        ".fixedRight";
+    @fixedLeftCSSScope:         ".fixedLeft";
+ 
+//  Media Queries
+    @SmartphonesPortraitAndLandscape: ~"(min-width : 320px) and (max-width : 480px)";
+    @SmartphonesLandscape: ~"(min-width : 321px)";
+    @SmartphonesPortrait: ~"(max-width : 320px)";
+    @iPadPortraitAndLandscape: ~"(min-width : 768px) and (max-width : 1024px)";
+    @iPadLandscape: ~"(min-width : 768px) and (max-width : 1024px) and (orientation : landscape)";
+    @iPadPortrait: ~"(min-width : 768px) and (max-width : 1024px) and (orientation : portrait)";
+    @DesktopAndLaptop: ~"(min-width : 1025px)";
+
+//  ==========================================================================
+.BuildIt(@responsiveWidth, @mobileOverride){
+    .isRelative(@a) when (@a = false) {
+        /* Relative generation is OFF */
+    }
+    .isRelative(@a) when (@a = true){
+        .blockLoopParser(relative, 1, 12, 1, @relativeCSSScope, @responsiveWidth, @blockGutter);
+    }
+    .isRelative(@isRelative);
+
+    .isFluid(@a) when (@a = false) {
+        /* Fluid generation is OFF */
+    }
+    .isFluid(@a) when (@a = true){
+        .blockLoopParser(fluid, 10, 100, 10, @fluidCSSScope, 100%, @fluidGutter);
+        (~"@{fluidCSSScope}"){
+            (~"@{blockCSSScope}25") {.getBlockWidths(fluidother, 100%, 25, @fluidGutter, 100);}
+            (~"@{blockCSSScope}33") {.getBlockWidths(fluidother, 100%, 33.3334, @fluidGutter, 100);}
+            (~"@{blockCSSScope}66") {.getBlockWidths(fluidother, 100%, 66.6667, @fluidGutter, 100);}
+            (~"@{blockCSSScope}75") {.getBlockWidths(fluidother, 100%, 75, @fluidGutter, 100);}
+        }
+    }
+    .isFluid(@isFluid);
+
+    .blockLoopParser(@type, @from, @to, @step, @scope, @width, @gutter){
+        .blockLoop(@index) when(@index =< @to) {
+            (~"@{scope} @{blockCSSScope}@{index}") {
+                .getBlockWidths(@type, @width, @index, @gutter, @to);
+            }
+            .blockLoop(@index + @step);
+        }
+        .blockLoop(@from);
+    }
+
+    //  ==========================================================================
+    .getBlockWidths(@type, @thisWidth, @thisSize, @thisGutter, @thisTotal){
+        @thisNestSize:@thisSize;//SCOPE
+        
+        .mobileOverride(@a) when (@a = false) {
+            .SwitchType(@a) when (@a = relative){
+                @blockWidth:((@thisWidth / 12) * @thisSize) - (2 * @thisGutter);
+                @blockGutter:@thisGutter;
+     
+                .forEachOffset (@thisSize) when (@thisSize > 0) {
+                    &.offset_@{thisSize}{
+                        margin-left:((@thisWidth / 12) * @thisSize) + (@thisGutter);
+                    }
+                    .forEachOffset(@thisSize - 1);
+                }
+                .forEachOffset (0) {};.forEachOffset (@thisTotal);
+
+                .forEachNest (@thisNestSize) when (@thisNestSize > 0) {
+                    (~".grid_@{thisNestSize}"){
+                        @nestwidth:((@blockWidth / 12) * @thisNestSize) - (2 * @thisGutter);
+                        width:@nestwidth;
+                    }
+                    .forEachNest(@thisNestSize - 1);
+                } 
+                .forEachNest (0) {};.forEachNest (@thisTotal);
+            }
+            .SwitchType(@a) when (@a = fluid) {
+                @blockGutter:@thisGutter;
+                @blockWidth:percentage(@thisSize / 100) - (2 * @blockGutter);
+
+                .forEachOffset (@thisSize) when (@thisSize > 0) {
+                    &.offset_@{thisSize}{
+                        margin-left:percentage(@thisSize / 100) + (@blockGutter);
+                    }
+                    .forEachOffset(@thisSize - 10);
+                }
+                .forEachOffset (0) {};.forEachOffset (@thisTotal);
+
+                .forEachNest (@thisNestSize) when (@thisNestSize > 0) {
+                    (~".grid_@{thisNestSize}"){
+                        width:percentage(@thisNestSize / 100) - (2 * @blockGutter);
+                    }
+                    .forEachNest(@thisNestSize - 10);
+                } 
+                .forEachNest (0) {};.forEachNest (@thisTotal);
+            }
+            .SwitchType(@a) when (@a = fluidother){
+                @blockGutter:@thisGutter;
+                @blockWidth:percentage(@thisSize / 100) - (2 * @blockGutter);
+            }
+            .SwitchType(@type);
+        }
+        .mobileOverride(@a) when (@a = true){
+            @blockWidth:@thisWidth - (2 * @thisGutter);
+
+            (~"@{blockPrefixCSSScope}"){
+                margin-left:0;
+                margin-right:0; 
+            }
+        }  
+        .mobileOverride(@mobileOverride);
+
+        width:@blockWidth;
+        margin-left:@blockGutter;
+        margin-right:@blockGutter;
+
+        //FIXED POSITION HOOKS
+        (~"@{fixedRightCSSScope}"){
+            position:fixed;
+            right:50%;
+            margin-right:-(@blockWidth/2);
+        }
+        (~"@{fixedLeftCSSScope}"){
+            position:fixed;
+            left:50%;
+            margin-left:-(@blockWidth/2);
+        }
+
+    }
+    //  ==========================================================================
+
+    //RELATIVE
+    (~"@{outerContainerCSSScope}"){
+        width:@responsiveWidth + (2 * @outerGutter);
+        margin-left:auto;
+        margin-right:auto;
+    }
+    (~"@{blockContainerCSSScope}"){
+        width:@responsiveWidth;
+        margin-left:auto;
+        margin-right:auto;
+    }
+
+    //FLUID
+    (~"@{fluidCSSScope}"),(~"@{fluidCSSScope} @{blockContainerCSSScope}"){
+        width:100%;
+    }
+
+    //BLOCKS 
+    (~"@{blockPrefixCSSScope}"){
+        float:left;
+        display:block;
+    }  
+
+}
+//  ==========================================================================
+
+.MakeItResponsive(@a) when (@a = false) {
+    .BuildIt(960px, false);
+}
+.MakeItResponsive(@a) when (@a = true){
+    
+    .mobileOverride(@a) when (@a = false) {
+        @media @SmartphonesPortraitAndLandscape {
+            .BuildIt(480px, false);
+        }
+        @media @SmartphonesLandscape{
+            .BuildIt(480px, false);
+        }
+        @media @SmartphonesPortrait {
+            .BuildIt(320px, false);
+        }
+    }
+    .mobileOverride(@a) when (@a = true){
+        @media @SmartphonesPortraitAndLandscape {
+            .BuildIt(480px, true);
+        }
+        @media @SmartphonesLandscape{
+            .BuildIt(480px, true);
+        }
+        @media @SmartphonesPortrait {
+            .BuildIt(320px, true);
+        }
+    }
+    .mobileOverride(@mobileOverride);
+
+    .tabletResponsive(@a) when (@a = false) {
+        /* Tablet responsive is OFF */
+    }
+    .tabletResponsive(@a) when (@a = true){
+        @media @iPadPortraitAndLandscape{
+            .BuildIt(960px, false);
+        }
+        @media @iPadLandscape {
+            .BuildIt(960px, false);
+        }
+        @media @iPadPortrait {
+            .BuildIt(768px, false);
+        }
+    }
+    .tabletResponsive(@tabletResponsive);
+
+    .desktopResponsive(@a) when (@a = false) {
+        /* Desktop responsive is OFF */
+    }
+    .desktopResponsive(@a) when (@a = true){
+        @media @DesktopAndLaptop {
+            .BuildIt(960px, false);
+        }
+    }
+    .desktopResponsive(@desktopResponsive);
+
+}
+.MakeItResponsive(@isResponsive);

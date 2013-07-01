@@ -1,0 +1,11 @@
+.editable{
+	float:left;
+	display:block;
+	margin:0 10px 5px;
+}
+.editable label{
+	font-size:13px;
+}
+.editable input{
+	width:50px;
+}

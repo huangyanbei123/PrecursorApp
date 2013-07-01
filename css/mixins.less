@@ -1,0 +1,60 @@
+//  ==========================================================================
+//  Mixin settings ~ Strictly re-usable methods in here
+//  ========================================================================== */
+
+  //ROUNDED CORNERS
+  .makeRounded(@radius: 2px) {
+      -moz-border-radius:@radius;
+      -webkit-border-radius:@radius;
+      -o-border-radius:@radius;
+      -ms-border-radius:@radius;
+      -khtml-border-radius:@radius;
+      border-radius:@radius;
+  } 
+
+  //GRADIENTS
+  .makeGradient(@from, @to, @fallback) {
+      background:@fallback; 
+      background-image:-moz-linear-gradient(top, @from 0%, @to 100%);
+      background-image:-webkit-gradient(linear, left top, left bottom, from(@from), to(@to));
+      background-image:-webkit-linear-gradient(top,color-stop(0, @from), color-stop(1, @to));
+      background-image:-ms-linear-gradient(top, @from 0%, @to 100%);
+      background-image:-o-linear-gradient(top, @from 0%, @to 100%);
+  }
+
+  //DROPSHADOW
+  .makeDropshadow(@a:0px, @b:1px, @c:10px, @colour:rgba(0, 0, 0, 1)) {
+      -moz-box-shadow:@a @b @c @colour;
+      -webkit-box-shadow:@a @b @c @colour;
+      box-shadow:@a @b @c @colour;
+      -moz-box-shadow:@a @b @c @colour;
+      -webkit-box-shadow:@a @b @c @colour;
+      box-shadow:@a @b @c @colour;
+  }
+  .makeInsetDropshadow(@a:0px, @b:1px, @c:10px, @colour:rgba(0, 0, 0, 1)) {
+      -moz-box-shadow:inset @a @b @c @colour;
+      -webkit-box-shadow:inset @a @b @c @colour;
+      box-shadow:inset @a @b @c @colour;
+      -moz-box-shadow:inset @a @b @c @colour;
+      -webkit-box-shadow:inset @a @b @c @colour;
+      box-shadow:inset @a @b @c @colour;
+  }
+
+  //OPACITY
+  .makeOpacity(@opacity: 0.7){
+      @thisopacity:percentage(@opacity);
+      -ms-filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=@thisopacity);
+      filter:alpha(opacity=@thisopacity);
+      -moz-opacity:@opacity;
+      -khtml-opacity:@opacity;  
+      opacity:@opacity;
+  }
+
+  //CSS TRANSITIONS
+  .makePretty(@speed){
+    -webkit-transition: all @speed ease;
+    -moz-transition: all @speed ease;
+    -ms-transition: all @speed ease;
+    -o-transition: all @speed ease;
+    transition: all @speed ease;
+  }
