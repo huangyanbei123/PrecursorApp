@@ -16,23 +16,50 @@
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
     <![endif]-->
 
-    <div id="wrapper">
+    <a href="#/page1">Page 1</a> | <a href="#/page2">Page 2</a> | <a href="#/page3">Page 3</a>
 
-    </div>
+    <div id="content"></div>
 
     <div id="console" ng-bind="console"></div>
 
     <div id="loader">
-        <div id="bar">
-            <div id="loader-bar"></div>
-        </div>
-        <div id="loader-percentage"><span id="loader-text"></span>%</div>
-        <div id="loader-update"></div>
+        <div id="bar"><div id="loader-bar"></div></div>
+        <div id="loader-percentage"><span id="loader-text">0</span>%</div>
+        <div id="loader-update">Initializing...</div>
     </div>
 
-    <div id="images" style="display:none;">
-        <li class=""><img src="//lorempixel.com/347/440/?677"></li><li class=""><img src="//lorempixel.com/212/236/?719"></li><li class=""><img src="//lorempixel.com/313/322/?501"></li><li class=""><img src="//lorempixel.com/497/388/?446"></li><li class=""><img src="//lorempixel.com/468/356/?756"></li><li class=""><img src="//lorempixel.com/574/487/?182"></li><li class=""><img src="//lorempixel.com/175/230/?403"></li><li class=""><img src="//lorempixel.com/343/251/?784"></li><li class=""><img src="//lorempixel.com/182/148/?316"></li><li class=""><img src="//lorempixel.com/380/353/?142"></li><li class=""><img src="//lorempixel.com/117/155/?814"></li><li class=""><img src="//lorempixel.com/453/499/?609"></li><li class=""><img src="//lorempixel.com/565/472/?542"></li><li class=""><img src="//lorempixel.com/602/517/?257"></li><li class=""><img src="//lorempixel.com/244/332/?936"></li><li class=""><img src="//lorempixel.com/270/236/?664"></li><li class="is-broken"><img src="//foo/broken-64.jpg"></li><li class=""><img src="//lorempixel.com/368/401/?760"></li><li class=""><img src="//lorempixel.com/345/427/?218"></li><li class=""><img src="//lorempixel.com/544/438/?270"></li><li class=""><img src="//lorempixel.com/227/215/?980"></li>
-    </div>
+    <script id="page1" type="text/x-handlebars-template">
+        <div id="c_page1">
+
+            <img src="http://farm9.staticflickr.com/8391/8497374607_d58cbffc21.jpg"/>
+            <img src="http://farm8.staticflickr.com/7347/8994508369_46c3d454cc_m.jpg"/>
+            <img src="http://farm6.staticflickr.com/5262/5551603678_3c62359501.jpg"/>
+            <img src="http://farm1.staticflickr.com/116/292088489_e2864e5274.jpg"/>
+        </div>
+    </script>
+
+    <script id="page2" type="text/x-handlebars-template">
+        <div id="c_page2">
+            <img src="http://farm4.staticflickr.com/3116/2292609274_07bcb895fc.jpg"/>
+            <img src="http://farm3.staticflickr.com/2339/2292610708_ea10e0970d.jpg"/>
+            <img src="http://farm3.staticflickr.com/2207/2291814129_a164b4148b.jpg"/>
+            <img src="http://farm3.staticflickr.com/2146/2291790259_307e612164.jpg"/>
+        </div>
+    </script>
+
+    <script id="page3" type="text/x-handlebars-template">
+        <div id="c_page3">
+            <img src="http://farm3.staticflickr.com/2245/2166748592_c219213387.jpg"/>
+            <img src="http://farm3.staticflickr.com/2218/2083661323_0fdb190afd.jpg"/>
+            <img src="http://farm3.staticflickr.com/2073/2084446212_c6aaf44b41.jpg"/>
+            <img src="http://farm3.staticflickr.com/2343/2072555192_c3e00dbed0.jpg"/>
+            <img src="http://farm1.staticflickr.com/119/292085965_bf97d0b795.jpg"/>
+            <img src="http://farm1.staticflickr.com/118/292085963_c4d627f4ba.jpg"/>
+            <img src="http://farm6.staticflickr.com/5267/5551603872_78dbc82245.jpg"/>
+
+
+        </div>
+    </script>
 
     <!-- INIT SCRIPTS -->
     <script src="components/modernizr/modernizr.js"></script>

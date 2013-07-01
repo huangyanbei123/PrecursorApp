@@ -40,6 +40,15 @@ body {
   width: 150px;
   height: 100%;
   background: #f1f1f1;
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+  font-size: 11px;
+}
+#console div {
+  line-height: 17px;
+  margin-bottom: 10px;
+}
+#console div:before {
+  content: "*";
 }
 #loader {
   font-size: 18px;

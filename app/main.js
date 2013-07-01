@@ -2,7 +2,9 @@
 var app = window.app || {},
     helper = window.helper || {},
     settings = window.settings || {},
-    utils = window.utils || {};
+    utils = window.utils || {},
+    router = window.router || {},
+    view = window.view || {};
 
 settings = {
 
@@ -12,7 +14,9 @@ settings = {
                         "//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js",
                         "components/eventEmitter/EventEmitter.js",
                         "components/eventie/eventie.js",
-                        "components/imagesloaded/imagesloaded.js"
+                        "components/imagesloaded/imagesloaded.js",
+                        "components/sammy.js",
+                        "components/handlebars.js"
     ]},
 
     //Enable / disable the console
@@ -55,30 +59,109 @@ settings = {
                 }
             }
         }
+    },
+
+    site: { 
+        template:       "#content", //Render the templates in here
+        home:           "page1"     //The #hash of the first page
     }
 };
 
+//------------------------------------------------------------------- 
 app = {
-    init: function(){
+    run: function(){
         //DOM ready in here
         helper.console(settings.loader.lang.en.status.ready);
-
     }
 };
 
+//------------------------------------------------------------------- 
+view = {
+    render: function(route){
+        //Load routed template
+        $(settings.site.template).html(Handlebars.compile($("#" + route).html()));
+        
+        //Initialize the loader
+        utils.loader.images(route);
+    }
+};
+
+//------------------------------------------------------------------- 
 utils = {
-    loader: function(command){
-        switch(command){
-            case "hide": 
-                $(settings.loader.l).delay(450).fadeOut(150);
-                break;
-            case "show": 
-                $(settings.loader.l).delay(450).fadeIn(150);
-                break;
+    loader: {
+        init: function(){
+            var SiteLoader = (function(window){
+                var document = window.document
+                return loader;
+            })(window);
+        },
+        onEvent: function(event, elem){
+            if (elem === undefined){elem = 15;}
+            settings.loader.progress += elem;
+            utils.loader.render(event);
+        },
+        render: function(event){
+            settings.loader.loaderText.innerHTML = Math.round(settings.loader.progress);
+            settings.loader.loaderUpdate.innerHTML = event;
+            settings.loader.loaderBar.style.width = Math.round(settings.loader.progress) + '%';
+        },
+        command: function(command){
+            switch(command){
+                case "hide": 
+                    $(settings.loader.l).delay(500).fadeOut(450);
+                    break;
+                case "show":
+                    settings.loader.progress = 0;
+                    utils.loader.render(settings.loader.lang.en.msg.images);
+                    $(settings.loader.l).show();
+                    break;
+            }
+        },
+        images: function(route){
+            var imgLoad = imagesLoaded(document.getElementById("c_" + route))
+              , imagecount = imgLoad.images.length
+              , _img = 100 / imagecount;
+
+            helper.console("Loading " + imagecount + " images");
+
+            if (imagecount !== 0){
+                utils.loader.command("show");
+
+                imgLoad.on('progress', function() {
+                    utils.loader.onEvent(settings.loader.lang.en.msg.images, _img);
+                }).on('always', function(){
+                    utils.loader.onEvent(settings.loader.lang.en.msg.finished, 0);
+                    helper.console(settings.loader.lang.en.status.images);
+                    utils.loader.command("hide");
+                }).on('fail', function(){
+                    helper.console(settings.loader.lang.en.status.err["404"]);
+                });
+            } else {
+                utils.loader.command("hide");
+            }
+
         }
     }
 };
 
+//------------------------------------------------------------------- 
+router = {
+    init: function(route){
+        helper.console('Routing is ready');
+        route.mapRoutes([
+            ['get', '#/', function() { 
+                helper.console('Home');
+                //DO SOMETHING
+            }],
+            ['get', '#/:frag', function() { 
+                //From the router, send value to the view / template
+                view.render(this.params['frag']);
+            }]
+        ]);
+    }
+};
+
+//------------------------------------------------------------------- 
 helper = {
     console: function(msg){
         if (settings.console.enabled){
@@ -87,30 +170,13 @@ helper = {
     }
 };
 
+
 //------------------------------------------------------------------- 
+//  PAGE LOAD
+//  Create the loader, and listen for changes
+//-------------------------------------------------------------------
 
-var SiteLoader = (function(window, Math){
-    var document = window.document
-      , loader = {
-        onEvent: function(event, elem){
-            if (elem === undefined){
-                elem = 15;
-            }
-            settings.loader.progress += elem;
-            render(event);
-        }
-    } 
-    function render(event){
-        settings.loader.loaderText.innerHTML = Math.round(settings.loader.progress);
-        settings.loader.loaderUpdate.innerHTML = event;
-        settings.loader.loaderBar.style.width = Math.round(settings.loader.progress) + '%';
-    }
-    return loader;
-})(window, Math);
-
-SiteLoader.onEvent(settings.loader.lang.en.msg.assets, 5);
 helper.console(settings.loader.lang.en.status.dom);
-
 (function(Modernizr, loader) {
     Modernizr.load({
     load: settings.scripts.paths,
@@ -119,7 +185,7 @@ helper.console(settings.loader.lang.en.status.dom);
 
         //Load our typekit fonts
         if (settings.typekit.enabled){
-            SiteLoader.onEvent(settings.loader.lang.en.msg.fonts);
+            //utils.loader.onEvent(settings.loader.lang.en.msg.fonts);
             TypekitConfig = {
                 kitId: settings.typekit.id,
                 scriptTimeout: 3000
@@ -142,23 +208,15 @@ helper.console(settings.loader.lang.en.status.dom);
         }
 
         //Scripts are loaded, so load all images and report back status
-        SiteLoader.onEvent(settings.loader.lang.en.msg.images);
-        
-        var imgLoad = imagesLoaded(document.getElementById("app"))
-          , _img = (100 - settings.loader.progress) / imgLoad.images.length;
+        $(function(){
+            //Initial run, hide the loader and run the app.
+            app.run();
 
-        imgLoad.on('progress', function() {
-            SiteLoader.onEvent(settings.loader.lang.en.msg.images, _img);
-        }).on('always', function(){
-            SiteLoader.onEvent(settings.loader.lang.en.msg.finished, 0);
-            helper.console(settings.loader.lang.en.status.images);
-            $(function(){
-                utils.loader("hide");
-                app.init();
-            });
-        }).on('fail', function(){
-            helper.console(settings.loader.lang.en.status.err["404"]);
+            //Initialize routing, then load images...
+            Sammy(function() {
+                router.init(this);
+            }).run();
         });
     }
 });
-})(Modernizr, SiteLoader);
+})(Modernizr);
