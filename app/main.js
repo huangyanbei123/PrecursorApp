@@ -7,8 +7,6 @@ var app = window.app || {},
     view = window.view || {};
 
 settings = {
-
-    //External scripts, loaded with Modernizr
     scripts: {
         paths: [
                         "//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js",
@@ -18,183 +16,159 @@ settings = {
                         "components/sammy.js",
                         "components/handlebars.js"
     ]},
-
-    //Enable / disable the console
     console: {
         enabled:        true,
         msg:            document.getElementById("console")
     },
-
-    //Enable / disable typekit
     typekit: {
         enabled:        true,
         id:             'eqy0kbp'
     },
-
-    //Content loader
-    loader: {
-        l:              '#loader',
-        loaderText:     document.getElementById("loader-text"),
-        loaderUpdate:   document.getElementById("loader-update"),
-        loaderBar:      document.getElementById("loader-bar"),
-        progress:       0,
-        lang: {
-            en: {
-                msg: {
-                    initializing:   "Initializing...",
-                    assets:         "Loading JS..",
-                    fonts:          "Loading fonts...",
-                    images:         "Loading images...",
-                    finished:       "All finished!"
-                },
-                status: {
-                    ready:          "App is ready",
-                    dom:            "DOM has loaded",
-                    scripts:        "Scripts have loaded",
-                    fonts:          "Fonts have loaded",
-                    images:         "Images have loaded",
-                    err: {
-                        "404":        "One or more of the images returned a 404..."
-                    }
-                }
-            }
-        }
-    },
-
-    //Site settings
     site: { 
         template:       "#content", //Render the templates in here
-        home:           "page1"     //The #hash of the first page
+        data:           null
     }
 };
 
 //------------------------------------------------------------------- 
+//  APP (DOM)
+//-------------------------------------------------------------------
 app = {
     run: function(){
         //DOM ready in here
-        helper.console(settings.loader.lang.en.status.ready);
+        helper.console("Ready &#10004;");
     }
 };
 
 //------------------------------------------------------------------- 
+//  ROUTER
+//-------------------------------------------------------------------
 router = {
     init: function(route){
-        helper.console('Routing is ready');
+        helper.console('Routing &#10004;');
         route.mapRoutes([
-            ['get', '#/', function() { 
-                helper.console('Home');
-                //DO SOMETHING
-            }],
             ['get', '#/:frag', function() { 
-                //From the router, send value to the view / template
-                view.render(this.params['frag']);
+                router.render(this.params['frag']);
+                helper.console("* " + this.params['frag']);
             }]
         ]);
-    }
-};
-
-//------------------------------------------------------------------- 
-view = {
+    },
     render: function(route){
-        //Load routed template
-        $(settings.site.template).html(Handlebars.compile($("#" + route).html()));
-        
-        //Initialize the loader
-        utils.loader.images(route);
+        var template = Handlebars.compile($("#" + route).html());
+        $(settings.site.template).html(template(settings.site.data));
+
+        utils.loader.load(route);
     }
 };
 
 //------------------------------------------------------------------- 
+//  UTILS
+//-------------------------------------------------------------------
 utils = {
     loader: {
-        onEvent: function(event, elem){
-            if (elem === undefined){elem = 15;}
-            settings.loader.progress += elem;
-            utils.loader.render(event);
+        useJquery:      true,
+        loader:         document.getElementById("loader"),
+        loaderText:     document.getElementById("loader-text"),
+        loaderUpdate:   document.getElementById("loader-update"),
+        loaderBar:      document.getElementById("loader-bar"),
+        firstload:      true,
+        loadpercentage: 25,
+        progress:       0,
+        instance:       {}, 
+        init: function(){
+            //TODO - Clean this up.
+            if (utils.loader.firstload && settings.typekit.enabled){
+                utils.loader.loadpercentage = 20;
+            }
+            utils.loader.onEvent("Initializing...");                         // Run the first event
         },
-        render: function(event){
-            settings.loader.loaderText.innerHTML = Math.round(settings.loader.progress);
-            settings.loader.loaderUpdate.innerHTML = event;
-            settings.loader.loaderBar.style.width = Math.round(settings.loader.progress) + '%';
+        onEvent: function(msg, count){
+            if (count === undefined){
+                count = utils.loader.loadpercentage;
+            }
+            utils.loader.progress += count;
+            utils.loader.render(msg);
+        },
+        render: function(msg){
+            utils.loader.loaderText.innerHTML = Math.round(utils.loader.progress);
+            utils.loader.loaderBar.style.width = Math.round(utils.loader.progress) + '%';
+            utils.loader.loaderUpdate.innerHTML = msg;
+        },
+        load: function(route){
+            var total = utils.loader.loadpercentage;
+            if (!utils.loader.firstload){
+                total = 100;
+            }
+            var imgLoad = imagesLoaded(document.getElementById("v_" + route)), 
+                imagecount = imgLoad.images.length,
+                _img = total / imagecount;
+
+            if (!utils.loader.instance[route]){                             //  Check if this view instance has already loaded
+                helper.console("Loading " + imagecount + " images...");     //  Console :: Load count
+                utils.loader.command("show");                               //  Show the loader
+                imgLoad.on('progress', function(instance) {
+                    utils.loader.onEvent("Loading images...", _img);        //  Update the loader per image
+                }).on('always', function(instance){
+                    utils.loader.instance[route] = instance.isComplete;     //  Set the view instance to true
+                    utils.loader.command("hide");                           //  Hide the loader
+                    helper.console("Assets &#10004;");                      //  Console :: success
+                    if (utils.loader.firstload){
+                        app.run();                                          //  DOM READY (run once)..
+                    }
+                    utils.loader.firstload = false;                         //  Set firstload to false
+                }).on('fail', function(instance){
+                    helper.console("404 on one or more images");
+                });
+            }
         },
         command: function(command){
             switch(command){
                 case "hide": 
-                    $(settings.loader.l).delay(500).fadeOut(450);
+                    if (!utils.loader.useJquery){
+                        utils.loader.loader.style.display = "none";
+                    } else {
+                        var $loader = $('#loader');
+                        $loader.delay(300).fadeOut(250);
+                    }
+                    setTimeout(function(){
+                        utils.loader.progress = 0;
+                        utils.loader.loaderBar.style.width = '0%';
+                        utils.loader.loaderText.innerHTML = '0';
+                    }, 550)
                     break;
                 case "show":
-                    settings.loader.progress = 0;
-                    utils.loader.render(settings.loader.lang.en.msg.images);
-                    $(settings.loader.l).show();
+                    utils.loader.loader.style.display = "block";
                     break;
             }
-        },
-        start: function(){
-            utils.loader.command("show");
-            //Load any assets as required...
-
-
-        },
-        images: function(route, loadpercent){
-            //Because the images preloading will be accessed outside of the
-            //normal page load (e.g. routing), we'll need to re-use this module.
-
-            //We can pass in a predetermined loadpercent, and calculate the
-            //remaining % left.
-            if (loadpercent === undefined){
-                loadpercent = 100;
-            }
-            var imgLoad = imagesLoaded(document.getElementById("c_" + route))
-              , imagecount = imgLoad.images.length
-              , _img = loadpercent / imagecount;
-
-            helper.console("Loading " + imagecount + " images");
-
-            if (imagecount !== 0){
-                utils.loader.command("show");
-
-                imgLoad.on('progress', function() {
-                    utils.loader.onEvent(settings.loader.lang.en.msg.images, _img);
-                }).on('always', function(){
-                    utils.loader.onEvent(settings.loader.lang.en.msg.finished, 0);
-                    helper.console(settings.loader.lang.en.status.images);
-                    utils.loader.command("hide");
-                }).on('fail', function(){
-                    helper.console(settings.loader.lang.en.status.err["404"]);
-                });
-            } else {
-                utils.loader.command("hide");
-            }
-
         }
     }
 };
 
 //------------------------------------------------------------------- 
+//  HELPERS
+//-------------------------------------------------------------------
 helper = {
     console: function(msg){
         if (settings.console.enabled){
             settings.console.msg.innerHTML += "<div>" + msg + "</div>";
+        } else {
+            settings.console.msg.style.display = "none";
         }
     }
 };
-
 
 //------------------------------------------------------------------- 
 //  PAGE LOAD
 //  Create the loader, and listen for changes
 //-------------------------------------------------------------------
-
-helper.console(settings.loader.lang.en.status.dom);
-(function(Modernizr, loader) {
+utils.loader.init();
+(function(Modernizr) {
     Modernizr.load({
     load: settings.scripts.paths,
     complete: function(){
-        helper.console(settings.loader.lang.en.status.scripts);
-        utils.loader.onEvent(settings.loader.lang.en.msg.scripts);
-        //Load our typekit fonts
+        helper.console("Scripts &#10004;");
+        utils.loader.onEvent("Scripts loaded...");
         if (settings.typekit.enabled){
-            utils.loader.onEvent(settings.loader.lang.en.msg.fonts);
             TypekitConfig = {
                 kitId: settings.typekit.id,
                 scriptTimeout: 3000
@@ -208,19 +182,18 @@ helper.console(settings.loader.lang.en.status.dom);
                     var rs = this.readyState;
                     if (rs && rs != 'complete' && rs != 'loaded') return;
                     clearTimeout(t);
+
+                    utils.loader.onEvent("Fonts loaded...");
+                    helper.console("Fonts &#10004;");
+
                     try { Typekit.load(TypekitConfig); } catch (e) {}
                 };
                 var s = document.getElementsByTagName('script')[0];
                 s.parentNode.insertBefore(tk, s);
             })();
-            helper.console(settings.loader.lang.en.status.fonts);
         }
-
-        utils.loader.onEvent(settings.loader.lang.en.msg.fonts);
-        //Initialize routing, then load images...
+        utils.loader.onEvent("Assets loaded...");
         $(function(){
-            app.run();
-            
             Sammy(function() {
                 router.init(this);
             }).run();

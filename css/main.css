@@ -48,7 +48,7 @@ body {
   margin-bottom: 10px;
 }
 #console div:before {
-  content: "*";
+  content: "- ";
 }
 #loader {
   font-size: 18px;
