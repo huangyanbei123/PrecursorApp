@@ -23,15 +23,22 @@ settings = {
 		msg:        document.getElementById("console")
 	},
 	typekit: {
-		enabled:    true,
+		enabled:    false,
 		id:         'eqy0kbp'
 	},
 	api: {
 		enabled: 	true
 	},
 	site: { 
-		template:   "#content", //Render the templates in here
-		data:       null
+		template:   	"#content", //Render the templates in here
+		data: {
+			soundcloud: {
+				set: 	"electronic-nightmares"
+			}
+		},
+		client_id: 		'c2a76ad6fcc6e1f66034336ee1e469d7',
+		redirect_uri: 	'http://dev.local/devsite02/',
+		set_id: 		'611534'
 	}
 };
 
@@ -43,16 +50,23 @@ app = {
 		//DOM ready in here
 		helper.console("Ready &#10004;");
 	},
-	get: function(){
+	soundcloud: function(){
 		SC.initialize({
-			client_id: 'c2a76ad6fcc6e1f66034336ee1e469d7',
-			redirect_uri: 'http://dev.local/devsite02/'
+			client_id: settings.site.client_id,
+			redirect_uri: settings.site.redirect_uri
 		});
-
-		return $.get("http://api.soundcloud.com/users/" + 223947 + ".json?client_id=c2a76ad6fcc6e1f66034336ee1e469d7", function(data) {
-			settings.site.data = data;
+		helper.console("Fetching data...")
+		return $.ajax({
+			type: "get",
+			url: "http://api.soundcloud.com/playlists/"+ settings.site.set_id + ".json?client_id=" + settings.site.client_id, 
+			success: function(data){
+				settings.site.data.soundcloud.setdata = data;
+			},
+			error: function(xhr, status, error) {
+			  	var err = eval("(" + xhr.responseText + ")");
+			  	helper.console(err.Message);
+			}
 		});
-
 	}
 };
 
@@ -87,20 +101,23 @@ utils = {
 		loaderUpdate:   document.getElementById("loader-update"),
 		loaderBar:      document.getElementById("loader-bar"),
 		firstload:      true,
-		loadpercentage: 25,
+		loadpercentage: 20,
 		progress:       0,
+		itemstoload: 	0,
 		instance:       {},		//Create an instance for each loaded item 
 
 		init: function(){
-			//Initialize the loader
-			if (utils.loader.firstload && settings.typekit.enabled){
-				if (settings.api.enabled){
-					utils.loader.loadpercentage = 16.6666; //Percent
-				}else{
-					utils.loader.loadpercentage = 20; //Percent
-				}
+
+			if (utils.loader.firstload){ 
+				utils.loader.itemstoload += 3;	//WINDOW|DOM|SCRIPTS -
 			}
-			utils.loader.onEvent("Initializing...");                         // Run the first event
+			if (settings.typekit.enabled){
+				utils.loader.itemstoload += 1;	//FONTS
+			}
+			if (settings.api.enabled){
+				utils.loader.itemstoload += 1;
+			}
+			utils.loader.loadpercentage = 100 / utils.loader.itemstoload;
 		},
 		onEvent: function(msg, count){
 			if (count === undefined){
@@ -122,14 +139,14 @@ utils = {
 			if (!utils.loader.firstload){
 				total = 100; //Percent
 			}
-			var imgLoad = imagesLoaded(document.getElementById("v_" + route)), 
-				imagecount = imgLoad.images.length,
+			var view = imagesLoaded(document.getElementById("v_" + route)), 
+				imagecount = view.images.length,
 				_img = total / imagecount;
 
 			if (!utils.loader.instance[route]){                             //  Check if this view instance has already loaded
-				helper.console("Loading " + imagecount + " images...");     //  Console :: Load count
+				helper.console("Loading: " + imagecount + " imgs");     	//  Console :: Load count
 				utils.loader.command("show");                               //  Show the loader
-				imgLoad.on('progress', function(instance) {
+				view.on('progress', function(instance) {
 					utils.loader.onEvent("Loading images...", _img);        //  Update the loader per image
 				}).on('always', function(instance){
 					utils.loader.instance[route] = instance.isComplete;     //  Set the view instance to true
@@ -140,7 +157,7 @@ utils = {
 					}
 					utils.loader.firstload = false;                         //  Set firstload to false
 				}).on('fail', function(instance){
-					helper.console("404 on one or more images");
+					helper.console("Asset 404...");
 				});
 			} else {
 				utils.loader.command("hide");                               //  Hide the loader
@@ -195,7 +212,7 @@ helper.init();
 
 (function(Modernizr) {
 	Modernizr.load({
-	load: 		settings.scripts.paths,
+	load: settings.scripts.paths,
 	complete: function(){
 		helper.console("Scripts &#10004;");
 		utils.loader.onEvent("Scripts loaded...");
@@ -226,15 +243,22 @@ helper.init();
 		utils.loader.onEvent("Assets loaded...");
 
 		$(function(){
-			utils.loader.onEvent("Fetching data...");
-			$.when(app.get()).done(function(data){
-				helper.console("API &#10004;");
-				console.log(data);
+			if (settings.api.enabled){
+				utils.loader.onEvent("Fetching data...");
+				$.when(app.soundcloud()).done(function(data){
+					helper.console("API &#10004;");
+					route();
+				});
+			} else {
+				route();
+			}
+			function route(){
 				Sammy(function() {
 					router.init(this);
 				}).run();
-			});
+			}
 		});
+		//
 	}
 });
 })(Modernizr);
