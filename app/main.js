@@ -4,7 +4,8 @@ var app = window.app || {},
 	settings = window.settings || {},
 	utils = window.utils || {},
 	router = window.router || {},
-	view = window.view || {};
+	view = window.view || {},
+	test = window.test || {};
 
 settings = {
 	scripts: {
@@ -14,7 +15,8 @@ settings = {
 					"components/eventie/eventie.js",
 					"components/imagesloaded/imagesloaded.js",
 					"components/sammy.js",
-					"components/handlebars.js"
+					"components/handlebars.js",
+					"//connect.soundcloud.com/sdk.js"
 	]},
 	console: {
 		enabled:    true,
@@ -23,6 +25,9 @@ settings = {
 	typekit: {
 		enabled:    true,
 		id:         'eqy0kbp'
+	},
+	api: {
+		enabled: 	true
 	},
 	site: { 
 		template:   "#content", //Render the templates in here
@@ -37,10 +42,21 @@ app = {
 	run: function(){
 		//DOM ready in here
 		helper.console("Ready &#10004;");
+	},
+	get: function(){
+		SC.initialize({
+			client_id: 'c2a76ad6fcc6e1f66034336ee1e469d7',
+			redirect_uri: 'http://dev.local/devsite02/'
+		});
+
+		return $.get("http://api.soundcloud.com/users/" + 223947 + ".json?client_id=c2a76ad6fcc6e1f66034336ee1e469d7", function(data) {
+			settings.site.data = data;
+		});
+
 	}
 };
 
-//------------------------------------------------------------------- 
+//-------------------------------------------------------------------
 //  ROUTER
 //-------------------------------------------------------------------
 router = {
@@ -76,9 +92,13 @@ utils = {
 		instance:       {},		//Create an instance for each loaded item 
 
 		init: function(){
-			//TODO - Clean this up.
+			//Initialize the loader
 			if (utils.loader.firstload && settings.typekit.enabled){
-				utils.loader.loadpercentage = 20; //Percent
+				if (settings.api.enabled){
+					utils.loader.loadpercentage = 16.6666; //Percent
+				}else{
+					utils.loader.loadpercentage = 20; //Percent
+				}
 			}
 			utils.loader.onEvent("Initializing...");                         // Run the first event
 		},
@@ -93,6 +113,9 @@ utils = {
 			utils.loader.loaderText.innerHTML = Math.round(utils.loader.progress);
 			utils.loader.loaderBar.style.width = Math.round(utils.loader.progress) + '%';
 			utils.loader.loaderUpdate.innerHTML = msg;
+		},
+		eventHandler: function(command){
+			helper.console(command);
 		},
 		load: function(route){
 			var total = utils.loader.loadpercentage;
@@ -172,7 +195,7 @@ helper.init();
 
 (function(Modernizr) {
 	Modernizr.load({
-	load: settings.scripts.paths,
+	load: 		settings.scripts.paths,
 	complete: function(){
 		helper.console("Scripts &#10004;");
 		utils.loader.onEvent("Scripts loaded...");
@@ -188,7 +211,7 @@ helper.init();
 				tk.src = '//use.typekit.com/' + TypekitConfig.kitId + '.js';
 				tk.onload = tk.onreadystatechange = function() {
 					var rs = this.readyState;
-					if (rs && rs != 'complete' && rs != 'loaded') return;
+					if (rs && rs !== 'complete' && rs !== 'loaded') return;
 					clearTimeout(t);
 
 					utils.loader.onEvent("Fonts loaded...");
@@ -201,10 +224,16 @@ helper.init();
 			})();
 		}
 		utils.loader.onEvent("Assets loaded...");
+
 		$(function(){
-			Sammy(function() {
-				router.init(this);
-			}).run();
+			utils.loader.onEvent("Fetching data...");
+			$.when(app.get()).done(function(data){
+				helper.console("API &#10004;");
+				console.log(data);
+				Sammy(function() {
+					router.init(this);
+				}).run();
+			});
 		});
 	}
 });
