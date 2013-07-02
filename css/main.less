@@ -50,27 +50,30 @@ body{
     }
 
 
-#wrapper{
-    position:relative;
-    margin-right:@console_width;
-}
 
-@console_width:150px;
-#console{
-    position:fixed;
-    top:0;
-    right:0;
-    width:@console_width;
-    height:100%;
-    background:#f1f1f1;
-    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
-    font-size:11px;
-    div {
-        line-height:17px;
-        margin-bottom:10px;
-        
-        &:before {
-            content: "- ";
+//CONSOLE
+body.console{
+    @console_width:150px;
+    #content{
+        position:relative;
+        margin-right:@console_width;
+    }
+    #console{
+        position:fixed;
+        top:0;
+        right:0;
+        width:@console_width;
+        height:100%;
+        background:#f1f1f1;
+        font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+        font-size:11px;
+        div {
+            line-height:17px;
+            margin-bottom:10px;
+            
+            &:before {
+                content: "- ";
+            }
         }
     }
 }

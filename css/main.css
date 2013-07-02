@@ -29,11 +29,11 @@ body {
 .grid_row .grid_block {
   margin-bottom: 0;
 }
-#wrapper {
+body.console #content {
   position: relative;
   margin-right: 150px;
 }
-#console {
+body.console #console {
   position: fixed;
   top: 0;
   right: 0;
@@ -43,11 +43,11 @@ body {
   font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
   font-size: 11px;
 }
-#console div {
+body.console #console div {
   line-height: 17px;
   margin-bottom: 10px;
 }
-#console div:before {
+body.console #console div:before {
   content: "- ";
 }
 #loader {
